@@ -1,0 +1,7 @@
+{
+  "mqtt_server": "192.168.1.100",
+  "mqtt_port": "1883",
+  "mqtt_topic_temp": "sensors/utilityroom/temperature",
+  "mqtt_topic_humid": "sensors/utilityroom/humidity",
+  "homekit_code": "333-33-333"
+}
