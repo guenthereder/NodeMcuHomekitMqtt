@@ -1,5 +1,7 @@
 #include <PubSubClient.h>
 #include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <arduino_homekit_server.h>
 #include <WiFiManager.h>
 #include <FS.h>
@@ -12,6 +14,8 @@
 
 #define LOG_D(fmt, ...) printf_P(PSTR(fmt "\n"), ##__VA_ARGS__);
 #define CONFIG_FILE "/config.json"
+
+#define HOMEKIT_SERVER_TASK_STACK 4096
 
 Adafruit_BME280 bme;
 unsigned long delayTime;
@@ -48,6 +52,8 @@ void initializeDefaultConfig() {
 }
 
 void setup() {
+  // homekit_storage_reset();
+
   Serial.begin(115200);
   if (!bme.begin(0x76)) {
     Serial.println("Could not find a valid BME280 sensor!");
@@ -69,6 +75,14 @@ void setup() {
 
   // Connect to WiFi using stored credentials
   connectWifi();
+
+  // if (MDNS.begin("ESP-HomeKit")) {
+  //   MDNS.addService("_hap", "_tcp", 5556);
+  //   // MDNS.addServiceTxt("_hap", "_tcp", "sf", "0"); // 1=paired, 0=unpaired
+  //   Serial.println("mDNS responder started");
+  // }
+
+  create_accessory_name(ESP.getChipId());
 
   // Initialize HomeKit
   set_homekit_code(appConfig.homekit_code);
@@ -175,22 +189,25 @@ void startConfigPortal() {
 }
 
 void connectWifi() {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin();
+    WiFi.persistent(false);
+    WiFi.disconnect(true);
+    delay(1000);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin();
 
-  int retries = 0;
-  while (WiFi.status() != WL_CONNECTED && retries < 20) {
-    delay(500);
-    Serial.print(".");
-    retries++;
-  }
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED && retries < 20) {
+      delay(500);
+      Serial.print(".");
+      retries++;
+    }
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("\nFailed to connect to WiFi, starting config portal");
-    startConfigPortal();
-  }
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("\nFailed to connect to WiFi, starting config portal");
+      startConfigPortal();
+    }
 
-  Serial.printf("\nWiFi connected, IP: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("\nWiFi connected, IP: %s\n", WiFi.localIP().toString().c_str());
 }
 
 void loop() {
@@ -211,10 +228,12 @@ static uint32_t next_report_millis = 0;
 
 void my_homekit_setup() {
     arduino_homekit_setup(&homekit_config);
+    delay(100);
 }
 
 void my_homekit_loop() {
     arduino_homekit_loop();
+    MDNS.update();
     const uint32_t t = millis();
 
     if (t > next_report_millis) {
@@ -277,7 +296,7 @@ void my_homekit_report() {
         // Publish to MQTT
         mqttClient.publish(appConfig.mttopicTemp, payload.c_str());
         mqttClient.publish(appConfig.mttopicHumid, payload.c_str());
-} else {
+    } else {
         Serial.println("MQTT not connected, skipping publish");
     }
 }

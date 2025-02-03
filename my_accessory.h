@@ -14,6 +14,7 @@ extern homekit_server_config_t homekit_config; // Renamed from 'config'
 
 void my_accessory_identify(homekit_value_t value);
 void set_homekit_code(const char *code);
+void create_accessory_name(uint32_t chip_id);
 
 #ifdef __cplusplus
 }
