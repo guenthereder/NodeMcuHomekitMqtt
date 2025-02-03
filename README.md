@@ -2,9 +2,8 @@
 
 A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQTT brokers using an ESP8266 (NodeMCU) and BME280 sensor.
 
-![Project Diagram](https://raw.githubusercontent.com/yourusername/NodeMCU-HomeKit-MQTT/main/images/diagram.png)
-
 ## Features
+
 - 📶 WiFi configuration via captive portal
 - 🏡 Apple HomeKit integration
 - 📡 MQTT publishing to any broker
@@ -13,6 +12,7 @@ A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQT
 - 📈 Configurable update intervals
 
 ## Hardware Requirements
+
 - NodeMCU ESP8266 development board
 - BME280 temperature/humidity sensor
 - Jumper wires (female-to-female)
@@ -20,6 +20,7 @@ A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQT
 - 3.3V/5V power source
 
 ## Software Requirements
+
 - Arduino IDE 2.x or PlatformIO
 - ESP8266 Arduino Core
 - Required Libraries:
@@ -32,18 +33,24 @@ A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQT
 ## Installation & Setup
 
 ### 1. Clone Repository
+
 ```bash
-git clone https://github.com/yourusername/NodeMCU-HomeKit-MQTT.git
-cd NodeMCU-HomeKit-MQTT
+git clone https://github.com/guenthereder/NodeMcuHomekitMqtt.git
+cd NodeMcuHomekitMqtt
 ```
 
 ### 2. Install Dependencies
+
 **Using Arduino IDE:**
+
 1. Open `NodeMcuHomekitMqtt.ino`
 2. Install libraries via **Tools > Manage Libraries**
 3. Install all libraries listed in [Library List](#library-list)
 
 **Using PlatformIO:**
+
+Not yet working
+
 ```ini
 [env:nodemcuv2]
 platform = espressif8266
@@ -59,7 +66,9 @@ lib_deps =
 ```
 
 ### 3. Initial Configuration
+
 1. Connect BME280 to NodeMCU:
+
    ```
    BME280 ↔ NodeMCU
    VCC   → 3.3V
@@ -67,9 +76,11 @@ lib_deps =
    SCL   → D1 (GPIO5)
    SDA   → D2 (GPIO4)
    ```
+
 2. Verify I2C address (0x76 or 0x77) using I2C scanner
 
 ## First Time Setup
+
 1. Power the device
 2. Connect to WiFi AP: `NodeMCU-Sensor`
 3. Open http://192.168.4.1 in browser
@@ -79,11 +90,11 @@ lib_deps =
    - MQTT topics
    - HomeKit setup code (format: XXX-XX-XXX)
 
-![Captive Portal](https://raw.githubusercontent.com/yourusername/NodeMCU-HomeKit-MQTT/main/images/portal.png)
 
 ## Flashing Instructions
 
 ### Using Arduino IDE
+
 1. Select board: **NodeMCU 1.0 (ESP-12E Module)**
 2. Set Flash Mode: **DIO**
 3. Flash Frequency: **40MHz**
@@ -92,13 +103,16 @@ lib_deps =
 6. Click **Upload**
 
 ### Using Prebuilt Binary
-1. Download latest `.bin` from [Releases](https://github.com/yourusername/NodeMCU-HomeKit-MQTT/releases)
+
+1. Download latest `.bin` from [Releases](https://github.com/guenthereder/NodeMcuHomekitMqtt.git/releases)
 2. Flash using esptool:
+
 ```bash
 esptool.py --port COM3 write_flash 0x0 firmware.bin
 ```
 
 ## Usage
+
 - **HomeKit Pairing:** Use configured setup code in Apple Home app
 - **MQTT Topics:**
   - Temperature: `sensors/utilityroom/temperature`
@@ -108,17 +122,21 @@ esptool.py --port COM3 write_flash 0x0 firmware.bin
 ## Creating Release Binaries
 
 ### 1. Generate Binary File
+
 **Using Arduino IDE:**
+
 1. Open project
 2. Select **Sketch > Export Compiled Binary**
 3. Binary will be created in project folder: `NodeMcuHomekitMqtt.ino.nodemcu.bin`
 
 **Using PlatformIO:**
+
 ```bash
 pio run -e nodemcuv2 -t buildfs -t upload
 ```
 
 ### 2. Create GitHub Release
+
 1. Tag your release: `v1.0.0`
 2. Upload binary file
 3. Add release notes
@@ -138,9 +156,10 @@ Recommended file naming convention:
 | Configuration reset            | Hold FLASH button during boot |
 
 ## License
-MIT License - See [LICENSE](LICENSE) for details
+See [LICENSE](LICENSE) for details
 
 ## Acknowledgments
+
 - Apple HomeKit ESP8266 implementation by Mixiaoxiao
 - WiFiManager by tzapu
 - Adafruit for BME280 library
