@@ -162,10 +162,10 @@ Grafana has very nice plotting and visualization capabilities.
 
 The following setup is only needed if you also want that MQTT broker capability working.
 
-1.Mosquitto MQTT Broker
-2.Telegraf (to collect MQTT data and write to InfluxDB)
-3.InfluxDB 1.x (time-series database)
-4.Grafana (for data visualization)
+1. Mosquitto MQTT Broker
+2. Telegraf (to collect MQTT data and write to InfluxDB)
+3. InfluxDB 1.x (time-series database)
+4. Grafana (for data visualization)
 
 ### Prerequisites
 
@@ -222,6 +222,7 @@ Step 2: Install InfluxDB
 sudo apt update
 sudo apt install influxdb
 ```
+
 Step 3: Start and Enable InfluxDB
 
 ```bash
@@ -427,7 +428,7 @@ MIT License - See [LICENSE](https://chat.deepseek.com/LICENSE) for details
 
 ## Acknowledgments
 
-*Apple HomeKit ESP8266 implementation by Mixiaoxiao
-*WiFiManager by tzapu
-*Adafruit for BME280 library
-*ESP Web Tools by Espressif
+* Apple HomeKit ESP8266 implementation by Mixiaoxiao
+* WiFiManager by tzapu
+* Adafruit for BME280 library
+* ESP Web Tools by Espressif
