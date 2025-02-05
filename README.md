@@ -1,3 +1,5 @@
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/guenthereder)
+
 # NodeMCU HomeKit-MQTT Environmental Sensor
 
 A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQTT brokers using an ESP8266 (NodeMCU) and BME280 sensor.
