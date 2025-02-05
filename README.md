@@ -2,6 +2,8 @@
 
 A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQTT brokers using an ESP8266 (NodeMCU) and BME280 sensor.
 
+There are many good solutions out there, due to some unknown reason I could not get them to work as I'd liked. This is why here is another solution.
+
 ## Features
 
 - 📶 WiFi configuration via captive portal
@@ -32,13 +34,21 @@ A DIY IoT sensor that exposes temperature/humidity data to Apple HomeKit and MQT
 
 ## Installation & Setup
 
-### 1. Clone Repository
+### Web Installer
+
+The easiest solution is to install the firmware via a web installer. You only need a chrome based browser.
+[Web Installer](https://geder.at/node_mcu)
+
+### DIY
+
+#### 1. Clone Repository
 
 ```bash
 git clone https://github.com/guenthereder/NodeMcuHomekitMqtt.git
 cd NodeMcuHomekitMqtt
+```
 
-### 2. Install Dependencies
+#### 2. Install Dependencies
 
 **Using Arduino IDE:**
 
@@ -48,7 +58,7 @@ cd NodeMcuHomekitMqtt
 
 **Using PlatformIO:**
 
-Not yet working
+(Not yet working)
 
 ```ini
 [env:nodemcuv2]
@@ -68,27 +78,15 @@ lib_deps =
 
 1. Connect BME280 to NodeMCU:
 
-   ```
+```
    BME280 ↔ NodeMCU
    VCC   → 3.3V
    GND   → GND
    SCL   → D1 (GPIO5)
    SDA   → D2 (GPIO4)
-   ```
+```
 
 2. Verify I2C address (0x76 or 0x77) using I2C scanner
-
-## First Time Setup
-
-1. Power the device
-2. Connect to WiFi AP: `NodeMCU-Sensor`
-3. Open http://192.168.4.1 in browser
-4. Configure parameters:
-   - WiFi SSID/password
-   - MQTT broker IP & port
-   - MQTT topics
-   - HomeKit setup code (format: XXX-XX-XXX)
-
 
 ## Flashing Instructions
 
@@ -110,6 +108,17 @@ lib_deps =
 esptool.py --port COM3 write_flash 0x0 firmware.bin
 ```
 
+## First Time Setup
+
+1. Power the device
+2. Connect to WiFi AP: `NodeMCU-Sensor`
+3. Wait: the web guard should open automatically
+4. Configure parameters:
+   - WiFi SSID/password
+   - MQTT broker IP & port
+   - MQTT topics
+   - HomeKit setup code (format: XXX-XX-XXX)
+
 ## Usage
 
 - **HomeKit Pairing:** Use configured setup code in Apple Home app
@@ -130,6 +139,8 @@ esptool.py --port COM3 write_flash 0x0 firmware.bin
 
 **Using PlatformIO:**
 
+(not yet working)
+
 ```bash
 pio run -e nodemcuv2 -t buildfs -t upload
 ```
@@ -142,83 +153,279 @@ pio run -e nodemcuv2 -t buildfs -t upload
 2.Install libraries via **Tools > Manage Libraries**
 3.Install all libraries listed in requirements
 
-### 3\. Initial Configuration
+## Server-Side Setup for MQTT, Telegraf, InfluxDB, and Grafana
 
-1.CopyBME280 ↔ NodeMCUVCC → 3.3VGND → GNDSCL → D1 (GPIO5)SDA → D2 (GPIO4)
-2.Verify I2C address (0x76 or 0x77) using I2C scanner
+I like having a temperature and humidity sensor in Homekit, but the visualization and evaluation part is somewhat limited.
+So I wanted to have a nice time series plot of the sensor data. That is why I use the node as an MQTT broker.
+The next step is a telegraf server that writes the received data into an influxdb which in turn is read by grafana.
+Grafana has very nice plotting and visualization capabilities.
 
-First Time Setup
-----------------
+The following setup is only needed if you also want that MQTT broker capability working.
 
-1.Power the device
-2.Connect to WiFi AP: NodeMCU-Sensor
-3.Open [http://192.168.4.1](http://192.168.4.1/) in browser
-4.Configure parameters:
-    *WiFi SSID/password
-    *MQTT broker IP & port
-    *MQTT topics
-    *HomeKit setup code (format: XXX-XX-XXX)
+1.Mosquitto MQTT Broker
+2.Telegraf (to collect MQTT data and write to InfluxDB)
+3.InfluxDB 1.x (time-series database)
+4.Grafana (for data visualization)
 
-Flashing Instructions
----------------------
+### Prerequisites
 
-### Using Arduino IDE
+A Raspberry Pi or Linux-based system.
+Basic familiarity with the command line.
+NodeMCU or similar device publishing data to MQTT.
 
-1.Select board: **NodeMCU 1.0 (ESP-12E Module)**
-2.Set Flash Mode: **DIO**
-3.Flash Frequency: **40MHz**
-4.Upload Speed: **115200**
-5.Port: **Select correct COM port**
-6.Click **Upload**
+### 1. Install Mosquitto MQTT Broker
 
-### Browser-Based Flashing (Chrome/Edge)
+Step 1: Install Mosquitto
 
-1.Visit [ESP Web Tools](https://espressif.github.io/esp-web-tools/)
-2.Connect NodeMCU via USB
-3.Drag & drop firmware.bin from [Releases](https://github.com/guenthereder/NodeMcuHomekitMqtt/releases)
-4.Follow on-screen instructions to flash
+```bash
+sudo apt update
+sudo apt install mosquitto mosquitto-clients
+```
 
-### Using Prebuilt Binary
+Step 2: Enable and Start Mosquitto
 
-1.Download latest .bin from [Releases](https://github.com/guenthereder/NodeMcuHomekitMqtt/releases)
-2.Flash using esptool:
+```bash
+sudo systemctl enable mosquitto
+sudo systemctl start mosquitto
+```
 
-bashCopy
+Step 3: Test Mosquitto
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   esptool.py --port COM3 write_flash 0x0 firmware.bin   `
+Subscribe to a topic in one terminal:
 
-Usage
------
+```bash
+mosquitto_sub -h localhost -t "test/topic"
+```
 
-***HomeKit Pairing:** Use configured setup code in Apple Home app
-***MQTT Topics:**
- *Temperature: sensors/utilityroom/temperature
- *Humidity: sensors/utilityroom/humidity
-***Update Interval:** 10 seconds (configurable in code)
+Publish a message in another terminal:
 
-Creating Release Binaries
--------------------------
+```bash
+mosquitto_pub -h localhost -t "test/topic" -m "Hello, MQTT!"
+```
 
-### Generate Binary File
+Verify the message appears in the subscriber terminal.
 
-**Using Arduino IDE:**
+### 2. Install InfluxDB 1.x
 
-1.Open project
-2.Select **Sketch > Export Compiled Binary**
-3.Binary will be created in project folder: NodeMcuHomekitMqtt.ino.nodemcu.bin
+I use version 1.x as the 2.x was not available on arm (raspberry pi) at the creation of this project.
 
-Troubleshooting
----------------
+Step 1: Add the InfluxDB Repository
 
-**IssueSolution**WiFi connection failedCheck ESP8266 antenna positionBME280 not foundVerify I2C address (0x76/0x77)HomeKit pairing failureReset HomeKit configurationBrowser flashing not workingEnable WebSerial in browser flags
+```bash
+wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+echo "deb https://repos.influxdata.com/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+```
 
-License
--------
+Step 2: Install InfluxDB
+
+```bash
+sudo apt update
+sudo apt install influxdb
+```
+Step 3: Start and Enable InfluxDB
+
+```bash
+sudo systemctl start influxdb
+sudo systemctl enable influxdb
+```
+
+Step 4: Verify InfluxDB
+
+Open the InfluxDB shell:
+
+```bash
+influx
+```
+
+Create a database for sensor data:
+
+```sql
+CREATE DATABASE sensor_data
+```
+
+Verify the database:
+
+```sql
+SHOW DATABASES
+```
+
+## 3. Install Telegraf
+
+Step 1: Install Telegraf
+
+```bash
+sudo apt install telegraf
+```
+
+Step 2: Configure Telegraf
+
+Edit the Telegraf configuration file:
+
+```bash
+sudo nano /etc/telegraf/telegraf.conf
+```
+
+Add the following sections:
+
+```ini
+[[inputs.mqtt_consumer]]
+  servers = ["tcp://localhost:1883"]
+  topics = ["sensors/#"]
+  data_format = "json"  # Use "value" for plain text messages
+
+[[outputs.influxdb]]
+  urls = ["http://localhost:8086"]
+  database = "sensor_data"
+  skip_database_creation = false
+```
+
+Step 3: Start and Enable Telegraf
+
+```bash
+sudo systemctl start telegraf
+sudo systemctl enable telegraf
+```
+
+Step 4: Verify Telegraf Logs
+
+Check the logs for errors:
+
+```bash
+sudo journalctl -u telegraf
+```
+
+## Server-Side Setup for MQTT, Telegraf, InfluxDB, and Grafana4. Install Grafana
+
+Step 1: Install Grafana
+
+```bash
+sudo apt install grafana
+```
+
+Step 2: Start and Enable Grafana
+
+```bash
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+```
+
+Step 3: Access Grafana
+
+Open a browser and go to:
+
+```bash
+http://<PI_IP_ADDRESS>:3000
+Log in with the default credentials:
+Username: admin
+Password: admin
+```
+
+Step 4: Add InfluxDB as a Data Source
+
+Go to Configuration → Data Sources → Add Data Source.
+Select InfluxDB.
+Configure the data source:
+URL: http://localhost:8086
+Database: sensor_data
+Click Save & Test.
+
+5. Verify the Setup
+
+Step 1: Publish Test Data to MQTT
+
+Publish a test JSON message to the MQTT broker:
+
+```bash
+mosquitto_pub -h localhost -t "sensors/livingroom/temperature" -m '{"temperature": 23.5}'
+```
+
+Step 2: Check InfluxDB
+
+Open the InfluxDB shell:
+
+```bash
+influx
+```
+
+Query the data:
+
+```sql
+USE sensor_data
+SELECT * FROM "sensors/livingroom/temperature"
+```
+
+## Step 3: Create a Grafana Dashboard
+
+Go to Dashboards → New Dashboard → Add Panel.
+In the query editor:
+Select the sensor_data database.
+Choose the measurement (e.g., sensors/livingroom/temperature).
+Select the field (e.g., temperature).
+Save the panel and dashboard.
+
+## Troubleshooting
+
+## Mosquitto
+
+### Check if Mosquitto is running
+
+```bash
+sudo systemctl status mosquitto
+```
+
+### Check logs
+
+```bash
+sudo journalctl -u mosquitto
+```
+
+## Telegraf
+
+### Check logs
+
+```bash
+sudo journalctl -u telegraf
+```
+
+Verify MQTT message format:
+
+```bash
+mosquitto_sub -h localhost -t "sensors/#"
+```
+
+## InfluxDB
+
+Check if InfluxDB is running:
+
+```bash
+sudo systemctl status influxdb
+```
+
+Check logs:
+
+```bash
+sudo journalctl -u influxdb
+```
+
+Grafana
+
+Check if Grafana is running:
+
+```bash
+sudo systemctl status grafana-server
+```
+
+Check logs:
+
+```bash
+sudo journalctl -u grafana-server
+```
+
+## License
 
 MIT License - See [LICENSE](https://chat.deepseek.com/LICENSE) for details
 
-Acknowledgments
----------------
+## Acknowledgments
 
 *Apple HomeKit ESP8266 implementation by Mixiaoxiao
 *WiFiManager by tzapu
