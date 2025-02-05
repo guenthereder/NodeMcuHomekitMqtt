@@ -297,7 +297,7 @@ Check the logs for errors:
 sudo journalctl -u telegraf
 ```
 
-## Server-Side Setup for MQTT, Telegraf, InfluxDB, and Grafana4. Install Grafana
+## 4. Install Grafana
 
 Step 1: Install Grafana
 
